@@ -33,21 +33,21 @@ def first_derivative(f, x0, h=0.1, kind='central'):
 
 
 def second_derivative_direct(f, x0, h=0.1):
-    """Evaluates the first derivative of a function at a point x0.
+    """Evaluates the second derivative of a function at a point x0.
 
         Parameters
         ----------
         f : callable
-            Function to take the derivative of
+            Function to take the second derivative of
         x0 : float
-            Point to take the derivative at
+            Point to take the second derivative at
         h : float (default: 0.1)
             Step size
 
         Returns
         -------
         float
-            Tangent of the function at x0"""
+            Second derivative of the function at x0"""
     return (f(x0+h) - 2*f(x0) + f(x0-h)) / (h**2)
 
 
