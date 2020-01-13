@@ -186,21 +186,62 @@ def evaluate_polynomial(polynomial,x):
     return value
 
 
-if __name__ == '__main__':
-    # Define function and grid proportions
-    n = 5
-    x1 = 0
-    x2 = 4
-    f = lambda x: x**7
+def get_derivation_matrix(f,x1,x2,n=2,k=1):
+    """Gives the matrix associated with the k-th derivative of f using n evenly spaced pivots
+
+    Parameters
+    ----------
+    f : callable
+        Function to generate the lagrange polynomials of
+    x1 : float
+        Left bound of polynomial
+    x2 : float
+        Right bound of polynomial
+    n : int (default: 2)
+        There are a total of n pivot points
+    k : int (default: 1)
+        The order of the derivative we are taking
+
+    Returns
+    -------
+    np.array
+        The discrete derivation matrix for the k-th derivative of this function in these points
+    """
+    #Check that the order of the derivative is larger than or equal to one
+    try:
+        assert k >= 1
+        assert type(k) == int
+    except AssertionError:
+        raise ValueError('k needs to be >= 1 and an integer (is {n})')
 
     # Get lagrange polynomials and list of pivot points
     pivots = np.linspace(start=x1, stop=x2, num=n)
-    lagrange_polynomials = get_lagrange_array(f=f,x1=x1,x2=x2,n=n)
+    lagrange_polynomials = get_lagrange_array(f=f, x1=x1, x2=x2, n=n)
 
-    # Calculate first-derivative matrix
-    lagrange_first_derivs = [differentiate_polynomial(polynomial) for polynomial in lagrange_polynomials]
-    first_deriv_matrix = np.zeros((n,n))
+    # Take the k-th derivative of every lagrange polynomial
+    derivatives_lagrange_polynomials = lagrange_polynomials
+    for i in range(k):
+        derivatives_lagrange_polynomials = [differentiate_polynomial(polynomial) for polynomial in derivatives_lagrange_polynomials]
+
+    # Fill in the derivation matrix
+    deriv_matrix = np.zeros((n, n))
     for i in range(n):
         for j in range(n):
-            first_deriv_matrix[i,j] = evaluate_polynomial(lagrange_first_derivs[i],pivots[j])
-    print(first_deriv_matrix)
+            deriv_matrix[i, j] = evaluate_polynomial(derivatives_lagrange_polynomials[i], pivots[j])
+
+
+    return deriv_matrix
+
+
+if __name__ == '__main__':
+    # Define function and grid proportions
+    f = lambda x: x**7
+    n = 5
+    x1 = 0
+    x2 = 4
+
+    first_deriv_matrix = get_derivation_matrix(f=f,x1=x1,x2=x2,n=n,k=1)
+    second_deriv_matrix = get_derivation_matrix(f=f,x1=x1,x2=x2,n=n,k=2)
+
+    print(first_deriv_matrix*first_deriv_matrix)
+    print(second_deriv_matrix)
