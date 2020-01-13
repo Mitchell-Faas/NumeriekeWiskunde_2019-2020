@@ -136,5 +136,29 @@ def get_lagrange_array(f, x1, x2, n=2):
     return lagrange_polynomials
 
 
+def differentiate_polynomial(polynomial):
+    """Takes the exact derivative of a polynomial
+
+    Parameters
+    ----------
+    polynomial : np.array
+        A polynomial encoded as  1 + 2x^2 + 3x^3 == [1, 2, 3] (length n)
+
+    Returns
+    -------
+    np.array
+        The derivative of the supplied polynomial. (length n-1)
+    """
+
+    # Initialize an empty derivative
+    derivative = np.zeros(len(polynomial) - 1)
+
+    # Go through the polynomial to take the derivative term by term
+    for i, _ in enumerate(derivative):
+        derivative[i] = polynomial[i+1] * (i+1)
+
+    return derivative
+
+
 if __name__ == '__main__':
-    print(get_lagrange_array(1, -1, 1, 3))
+    print(differentiate_polynomial(np.array([1, 1, 1, 1])))
