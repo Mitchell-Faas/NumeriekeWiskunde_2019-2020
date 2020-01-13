@@ -125,9 +125,9 @@ def get_lagrange_array(f, x1, x2, n=2):
         assert n >= 2
         assert type(n) == int
     except AssertionError:
-        raise ValueError(f'n needs to be >= 2 and an integer (is {n})')
+        raise ValueError('n needs to be >= 2 and an integer (is {n})')
 
-    # Set up all the pivots (equidistant from oneanother)
+    # Set up all the pivots (equidistant from one another)
     pivots = np.linspace(start=x1, stop=x2, num=n)
 
     # Set up the lagrange polynomials
@@ -160,5 +160,47 @@ def differentiate_polynomial(polynomial):
     return derivative
 
 
+def evaluate_polynomial(polynomial,x):
+    """Gives the value of a polynomial at point x
+
+    Parameters
+    ----------
+    polynomial : np.array
+        A polynomial encoded as  1 + 2x^2 + 3x^3 == [1, 2, 3] (length n)
+    x : float
+        Point at which to evaluate the polynomial
+
+    Returns
+    -------
+    Float
+        The value of the polynomial at point x
+    """
+
+    # Initiate variable to sum the value of the polynomial
+    value = 0
+
+    # Sum all terms of the polynomial
+    for power in range(len(polynomial)):
+        value += polynomial[power]*x**power
+
+    return value
+
+
 if __name__ == '__main__':
-    print(differentiate_polynomial(np.array([1, 1, 1, 1])))
+    # Define function and grid proportions
+    n = 5
+    x1 = 0
+    x2 = 4
+    f = lambda x: x**7
+
+    # Get lagrange polynomials and list of pivot points
+    pivots = np.linspace(start=x1, stop=x2, num=n)
+    lagrange_polynomials = get_lagrange_array(f=f,x1=x1,x2=x2,n=n)
+
+    # Calculate first-derivative matrix
+    lagrange_first_derivs = [differentiate_polynomial(polynomial) for polynomial in lagrange_polynomials]
+    first_deriv_matrix = np.zeros((n,n))
+    for i in range(n):
+        for j in range(n):
+            first_deriv_matrix[i,j] = evaluate_polynomial(lagrange_first_derivs[i],pivots[j])
+    print(first_deriv_matrix)
