@@ -132,7 +132,7 @@ def get_lagrange_list(x1, x2, n=2, pivots=None):
     return lagrange_polynomials
 
 
-def get_derivation_matrix(f, x1, x2, n=2, k=1):
+def get_derivation_matrix(x1, x2, n=2, pivots=None, k=1):
     """Gives the matrix associated with the k-th derivative of f using n evenly spaced pivots
 
     Parameters
@@ -145,6 +145,8 @@ def get_derivation_matrix(f, x1, x2, n=2, k=1):
         Right bound of polynomial
     n : int (default: 2)
         There are a total of n pivot points
+    pivots : np.array
+        Array of pivots to use. Only used to supply unevenly spaced pivots.
     k : int (default: 1)
         The order of the derivative we are taking
 
@@ -160,8 +162,11 @@ def get_derivation_matrix(f, x1, x2, n=2, k=1):
     except AssertionError:
         raise ValueError(f'k needs to be >= 1 and an integer (is {k})')
 
-    # Get lagrange polynomials and list of pivot points
-    pivots = np.linspace(start=x1, stop=x2, num=n)
+    # Allow for uneven pivots if pivots is defined
+    if pivots is None:
+        pivots = np.linspace(start=x1, stop=x2, num=n)
+
+    # Get lagrange polynomials
     lagrange_polynomials = get_lagrange_list(x1=x1, x2=x2, pivots=pivots)
 
     # Take the k-th derivative of every lagrange polynomial
@@ -183,8 +188,8 @@ if __name__ == '__main__':
     x1 = 0
     x2 = 4
 
-    first_deriv_matrix = get_derivation_matrix(f=f, x1=x1, x2=x2, n=n, k=1)
-    second_deriv_matrix = get_derivation_matrix(f=f, x1=x1, x2=x2, n=n, k=2)
+    first_deriv_matrix = get_derivation_matrix(x1=x1, x2=x2, pivots=np.array([0, 1, 1.1, 3.5, 4]), k=1)
+    second_deriv_matrix = get_derivation_matrix(x1=x1, x2=x2, pivots=np.array([0, 1, 1.1, 3.5, 4]), k=2)
 
-    print(first_deriv_matrix * first_deriv_matrix)
+    print(first_deriv_matrix @ first_deriv_matrix)
     print(second_deriv_matrix)
