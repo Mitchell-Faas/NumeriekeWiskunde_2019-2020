@@ -171,7 +171,7 @@ def get_derivation_matrix(f, x1, x2, n=2, k=1):
     deriv_matrix = np.zeros((n, n))
     for i in range(n):
         for j in range(n):
-            deriv_matrix[i, j] = lagrange_poly_derivs[i](pivots[j])  # Evaluate polynomial at pivots[j].
+            deriv_matrix[i, j] = lagrange_poly_derivs[j](pivots[i])  # Evaluate polynomial at pivots[i].
 
     return deriv_matrix
 
