@@ -56,8 +56,6 @@ def get_lagrange_polynomial(pivots, i):
 
     Parameters
     ----------
-    f : callable
-        Function to generate the lagrange polynomial on
     pivots : np.array
         Array of pivots to use for the lagrange polynomial
     i : int
@@ -90,14 +88,13 @@ def get_lagrange_polynomial(pivots, i):
     return lagrange_polynomial
 
 
-# todo Pim: Verify these results
-def get_lagrange_list(x1, x2, n=2, pivots=None):
+def get_lagrange_list(pivots=None, x1=0, x2=1, n=2):
     """Generate lagrange polynomials of f in n evenly spaced pivot points.
+
+    Required to pass either pivots or x1, x2, and n.
 
     Parameters
     ----------
-    f : callable
-        Function to generate the lagrange polynomials of
     x1 : float
         Left bound of polynomial
     x2 : float
@@ -132,13 +129,13 @@ def get_lagrange_list(x1, x2, n=2, pivots=None):
     return lagrange_polynomials
 
 
-def get_derivation_matrix(x1, x2, n=2, pivots=None, k=1):
+def get_derivation_matrix(pivots=None, x1=0, x2=1, n=2, k=1):
     """Gives the matrix associated with the k-th derivative of f using n evenly spaced pivots
+
+    Required to pass either pivots or x1, x2, and n.
 
     Parameters
     ----------
-    f : callable
-        Function to generate the lagrange polynomials of
     x1 : float
         Left bound of polynomial
     x2 : float
@@ -165,6 +162,8 @@ def get_derivation_matrix(x1, x2, n=2, pivots=None, k=1):
     # Allow for uneven pivots if pivots is defined
     if pivots is None:
         pivots = np.linspace(start=x1, stop=x2, num=n)
+    else:
+        n = len(pivots)
 
     # Get lagrange polynomials
     lagrange_polynomials = get_lagrange_list(x1=x1, x2=x2, pivots=pivots)
@@ -182,14 +181,32 @@ def get_derivation_matrix(x1, x2, n=2, pivots=None, k=1):
 
 
 if __name__ == '__main__':
-    # Define function and grid proportions
-    f = lambda x: x ** 7
-    n = 5
-    x1 = 0
-    x2 = 4
 
-    first_deriv_matrix = get_derivation_matrix(x1=x1, x2=x2, pivots=np.array([0, 1, 1.1, 3.5, 4]), k=1)
-    second_deriv_matrix = get_derivation_matrix(x1=x1, x2=x2, pivots=np.array([0, 1, 1.1, 3.5, 4]), k=2)
 
-    print(first_deriv_matrix @ first_deriv_matrix)
-    print(second_deriv_matrix)
+    # Make lists with different number of pivots and orders of derivatives at which to evaluate the difference
+    nr_of_pivots_list = [5*i for i in range(3,10)]
+    k_list = [i for i in range(2,10)]
+
+    # Create empty matrix to store results in
+    results_matrix = np.zeros((len(k_list),len(nr_of_pivots_list)))
+
+    # Iterate over different number of pivots and order of derivative
+    for i in range(len(k_list)):
+        for j in range(len(nr_of_pivots_list)):
+            # Create a list of evenly spaced pivots
+            pivots = np.linspace(0, 5, num=nr_of_pivots_list[j])
+
+            # Calculate the k-th derivative matrix by taking the first derivative matrix to the power k
+            first_deriv_matrix = get_derivation_matrix(pivots=pivots, k=1)
+            k_deriv_from_product = np.linalg.matrix_power(first_deriv_matrix,k_list[i])
+            # Calculate the k-th derivative matrix directly
+            k_deriv_direct = get_derivation_matrix(pivots=pivots, k=k_list[i])
+
+            # Take the difference between both matrices and then take the norm
+            # Normalize by dividing by the norm of the direct k-th derivative matrix
+            # Then take the 10-log and round to the nearest integer, before saving the result
+            results_matrix[i,j] = round(np.math.log(
+                np.linalg.norm(k_deriv_from_product - k_deriv_direct) / np.linalg.norm(k_deriv_direct)
+                ,10))
+
+print(results_matrix)
