@@ -1,5 +1,5 @@
 import numpy as np
-
+import pandas as pd
 
 def first_derivative(f, x0, h=0.1, kind='central'):
     """Evaluates the first derivative of a function at a point x0.
@@ -184,7 +184,7 @@ if __name__ == '__main__':
 
 
     # Make lists with different number of pivots and orders of derivatives at which to evaluate the difference
-    nr_of_pivots_list = [5*i for i in range(3,10)]
+    nr_of_pivots_list = [3*i for i in range(5,13)]
     k_list = [i for i in range(2,10)]
 
     # Create empty matrix to store results in
@@ -193,20 +193,30 @@ if __name__ == '__main__':
     # Iterate over different number of pivots and order of derivative
     for i in range(len(k_list)):
         for j in range(len(nr_of_pivots_list)):
-            # Create a list of evenly spaced pivots
-            pivots = np.linspace(0, 5, num=nr_of_pivots_list[j])
+            # Calculate the difference measure five times and save in list, so it can be averaged
+            run_list = np.zeros(10)
+            for run in range(10):
+                # Create a list of randomly spaced pivots
+                pivots = np.random.random_sample(nr_of_pivots_list[j])
 
-            # Calculate the k-th derivative matrix by taking the first derivative matrix to the power k
-            first_deriv_matrix = get_derivation_matrix(pivots=pivots, k=1)
-            k_deriv_from_product = np.linalg.matrix_power(first_deriv_matrix,k_list[i])
-            # Calculate the k-th derivative matrix directly
-            k_deriv_direct = get_derivation_matrix(pivots=pivots, k=k_list[i])
+                # Calculate the k-th derivative matrix by taking the first derivative matrix to the power k
+                first_deriv_matrix = get_derivation_matrix(pivots=pivots, k=1)
+                k_deriv_from_product = np.linalg.matrix_power(first_deriv_matrix,k_list[i])
+                # Calculate the k-th derivative matrix directly
+                k_deriv_direct = get_derivation_matrix(pivots=pivots, k=k_list[i])
 
-            # Take the difference between both matrices and then take the norm
-            # Normalize by dividing by the norm of the direct k-th derivative matrix
-            # Then take the 10-log and round to the nearest integer, before saving the result
+                # Take the difference between both matrices and then take the norm
+                # Normalize by dividing by the norm of the direct k-th derivative matrix
+                # Enter the result into run_list
+                run_list[run] = np.linalg.norm(k_deriv_from_product - k_deriv_direct) / np.linalg.norm(k_deriv_direct)
+            # Take the average value of the relative difference measure between the matrices
+            # Then take the 10-log and round to the nearest integer, and save the result
             results_matrix[i,j] = round(np.math.log(
-                np.linalg.norm(k_deriv_from_product - k_deriv_direct) / np.linalg.norm(k_deriv_direct)
+                np.average(run_list)
                 ,10))
 
-print(results_matrix)
+
+
+# Print the latex code that generates the table
+df = pd.DataFrame(results_matrix,columns=[nr_of_pivots_list],index=[k_list],dtype=int)
+print(df.to_latex())
